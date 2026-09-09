@@ -25,6 +25,25 @@ An IOM `Item` may represent:
 
 Always test `isError()` and expected cardinality before reading properties.
 
+### `applySQL` empty-result count
+
+Treat `applySQL` result counting as `Compatibility` behavior and verify it on the target release. After checking `isError()`, interpret `getItemCount() <= 0` as no matching row and only a positive value as a hit. Do not test only `getItemCount() == 0`: in observed server Method runtimes, an empty `applySQL` result commonly reports `-1`, which can incorrectly skip an add-or-create branch.
+
+```csharp
+Item rows = inn.applySQL(validatedReadOnlySql);
+if (rows.isError())
+{
+    return inn.newError("The lookup failed.");
+}
+
+if (rows.getItemCount() <= 0)
+{
+    // No matching row; execute the intended public IOM/AML business action.
+}
+```
+
+This rule is specific to interpreting legacy `applySQL` query results. It does not make direct SQL an approved business-write path, and the error check must come first so that `-1` does not hide an Error Item.
+
 ### Safe query rules
 
 - Set `type`/`action` explicitly.
