@@ -21,6 +21,24 @@ Produce release-aware Aras solutions that preserve server-side authorization, tr
    - `Reject`: bypasses security, transaction, audit, or recovery boundaries.
 5. Prefer, in order: configuration/metadata → public IOM/AML → documented extension point → isolated compatibility adapter. Never choose direct SQL or private UI internals merely because they are shorter.
 
+## Release 30 / build 14.0.22.40048 compatibility boundary
+
+Apply this section only when the target is **Aras Innovator Release 30, build 14.0.22.40048**. Confirm the build in the deployed instance and record whether Release 30 hotfix `068423.00` is installed; do not generalize these rules to every 14.x build or infer hotfix behavior without its release note or a runtime test.
+
+- **Server runtime:** Release 30 server components run on .NET 6.0. A custom DLL used by a Server Method must target .NET 6.0, reference the IOM assembly shipped with this exact release, be deployed with its symbols to `Server/bin`, and be registered in `Method-Config.xml` with the matching namespace/template and `line_number_offset`.
+- **C# compiler boundary:** .NET 6 runtime support does not establish the C# language version accepted by the Method compiler. Until `LangVersion` or an equivalent compile probe is verified on the target, follow the syntax already accepted by its Method template and compile-test newer constructs such as records, nullable-reference annotations, target-typed `new`, switch expressions, and `using var`. Do not teach general `async`/threading in request Server Methods as supported merely because specialized APIs use tasks or worker threads.
+- **IOM response semantics:** `Item.apply()` sends the request Item DOM and returns a new response `Item`; keep request and response variables separate. Distinguish error, zero matches, one result, and multiple results before reading properties. `loadAML()` instead replaces the current Item DOM.
+- **Action and event semantics:** `update` requires a lock; `edit` performs lock/update/unlock; a versionable first update after locking versions unless `version="0"`; `version` creates a new generation and has its own version/update event sequence. `serverEvents="0"` is not a complete event bypass: required events still run, and edit-related lock events can still run. Treat `On*` as replacement behavior, not an extra hook.
+- **event_version boundary:** In event version 2, grouped `onAfterAdd`, `onAfterUpdate`, and `onAfterVersion` handling runs once for the request group with the result collection as context, rather than once per Item as in version 1. Version 2 also changes copy/version behavior for relationship rows; therefore inspect the Method's event version and test multi-ID requests before relying on per-item execution.
+- **Relationship versioning:** A relationship row is an Item with its own identity and properties. Source-item versioning/cloning can clone relationship rows, while which related generation is referenced depends on RelationshipType behavior plus lifecycle-state behavior. Inspect both configurations; never infer fixed/float behavior from names or from one environment.
+- **Client browser floor:** Test client code across the documented Release 30 matrix: Windows 10/11 with Edge, Firefox ESR 102/115, or Chrome 119 minimum; Windows 8.1 with Firefox ESR 102/115; macOS 10.15 with Firefox ESR 102/115 or Chrome 119 minimum.
+- **Client context:** For documented Release 30 handlers, Item Actions receive the Item as `this`; Form/Grid events receive the browser document DOM; Field events receive the Field object; Form/Grid/Field code obtains the current Item through `document.thisItem`; relationship-grid code uses `parent.thisItem`. Grid callback IDs may be empty when no related Item exists. Keep any deeper frame, DOM, or grid access behind a Compatibility/Private adapter.
+- **Client async boundary:** Promise use is supported only where the called API documents it (for example, documented Vault file selection and asynchronous apply flows). Do not assume an Aras event dispatcher awaits a Promise returned by an arbitrary Client Method; prove the specific caller contract and failure propagation in every supported browser.
+- **File boundary:** File Items are immutable and non-versionable; replace the File and version its container instead of updating File content. File access derives from container relationships, and a database row alone does not prove that content is downloadable from Vault.
+- **Release 30 known-risk checks:** Export TGV-related CUI/Presentation Configuration dependencies explicitly when packaging; set Boolean access-control values explicitly to `0` or `1` rather than depending on `NULL`; test relationship-grid behavior in each supported browser. Treat vendor-documented database repair workarounds as incident procedures, not permission for routine direct SQL.
+
+Source basis: the official Release 30 Programmer's Guide, Platform Specifications, Life Cycles, File Handling, Release Notes, and the official documentation-library hotfix index. If a local runtime contradicts a guide, capture the exact build/hotfix and reproduce before changing this boundary.
+
 ## Non-negotiable constraints
 
 - The browser is not a trust boundary. CUI `Can Execute`, hidden/read-only fields, and client validation are UX only; enforce permission and business validation on the server, then test a direct AML/API call as an unauthorized identity.
@@ -68,7 +86,7 @@ Use [architecture-and-data-flow.md](references/architecture-and-data-flow.md) fo
    - `OnBefore*`: validate or transform request AML; returning an error stops the action.
    - `On*`: replace standard behavior only when explicitly intended and fully tested.
    - `OnAfter*`: process the response while still respecting transaction/rollback semantics; defer irreversible remote side effects.
-7. Handle `Item` result shapes before reading values: error → collection count/cardinality → property extraction.
+7. Keep request and response Items separate after `apply()`, then handle response shapes before reading values: error → zero/one/many cardinality → property extraction.
 8. Add tests for permitted, denied, malformed, empty, multiple-result, retry, and rollback paths.
 9. Package configuration and Methods; document target release and private/compatibility dependencies.
 
@@ -76,7 +94,7 @@ Use [modeling-and-development.md](references/modeling-and-development.md), [secu
 
 ## Installation and upgrade workflow
 
-For 2024 Release, follow [installation-2024.md](references/installation-2024.md) exactly.
+For Release 30/build 14.0.22.40048, use the exact Release 30 Installation Guide and Platform Specifications. [installation-2024.md](references/installation-2024.md) is a 2024-only reference and must not be used as the Release 30 prerequisite or upgrade contract.
 
 1. Confirm this is a new install or a separately governed upgrade/migration.
 2. Verify OS/IIS/.NET/Hosting Bundle/VC++/SQL prerequisites before running the installer.
@@ -117,7 +135,7 @@ Do not claim a code sample is copy-ready unless target ItemType/property names, 
 
 - Source priority, conflict decisions, and provenance: [evidence-policy.md](references/evidence-policy.md)
 - Core architecture, module dependencies, and design philosophy: [architecture-and-data-flow.md](references/architecture-and-data-flow.md)
-- Exact 2024 installation constraints: [installation-2024.md](references/installation-2024.md)
+- 2024-only installation constraints (not the Release 30 contract): [installation-2024.md](references/installation-2024.md)
 - Items, AML/IOM, Relationships, Methods, Events, client, CUI: [modeling-and-development.md](references/modeling-and-development.md)
 - Permissions, elevation, transactions, external effects, logging: [security-and-transactions.md](references/security-and-transactions.md)
 - Symptom-first diagnosis: [troubleshooting-runbook.md](references/troubleshooting-runbook.md)
