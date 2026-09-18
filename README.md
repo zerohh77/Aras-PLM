@@ -2,14 +2,19 @@
 
 面向 Aras Innovator 安装、建模、开发、集成、安全审查和故障诊断的可执行 Agent Skill。
 
-该 Skill 将 Aras Innovator 2024 Release 官方安装指南作为最高优先级依据，并把第三方文章、开发讲义和经验总结作为次级解释材料。遇到冲突时，它会明确标注证据层级、以官方资料为准，并隔离经典客户端或私有 API 兼容债务。
+该 Skill 按目标 Release、Build 和 Hotfix 建立版本边界，以对应版本的 Aras 官方资料为最高优先级依据，并把第三方文章、开发讲义和经验总结作为次级解释材料。遇到冲突时，它会明确标注证据层级、以官方资料为准，并隔离经典客户端或私有 API 兼容债务。
+
+当前版本包含 **Aras Innovator Release 30 / Build 14.0.22.40048** 的专项兼容规则，同时保留 Aras Innovator 2024 Release 的安装参考。两个版本的要求不会相互替代。
 
 ## 能做什么
 
 - 提取 Aras 的核心数据流、模块依赖关系和元数据驱动设计原则
 - 指导 ItemType、RelationshipType、AML/IOM、Method、Server Event、CUI、Vault 等开发
 - 强制执行权限、事务、错误处理、查询边界和可升级性约束
-- 提供 Aras Innovator 2024 Release 安装与验收清单
+- 提供 Aras Innovator 2024 Release 安装与验收清单，并明确其不可作为 Release 30 安装或升级契约
+- 审核 Release 30 / Build 14.0.22.40048 的 .NET 6、Server Method、自定义 DLL、AML/IOM、事件版本和 Relationship 版本行为
+- 按 Release 30 官方浏览器矩阵检查客户端上下文、Promise/异步调用和私有 DOM/frame/grid API 风险
+- 记录 Hotfix 状态，将未经文档或运行时验证的行为保留为待核验项
 - 按“症状 → 证据 → 假设 → 验证 → 回滚”执行故障诊断
 - 识别旧版本、经典客户端和私有 DOM/frame/grid API 风险
 
@@ -34,7 +39,7 @@ skills/aras-innovator-engineering/
 ## 安装到 Codex
 
 ```bash
-git clone https://github.com/OWNER/REPOSITORY.git Aras-PLM
+git clone https://github.com/zerohh77/Aras-PLM.git
 mkdir -p ~/.codex/skills
 cp -R Aras-PLM/skills/aras-innovator-engineering ~/.codex/skills/
 ```
@@ -44,7 +49,7 @@ cp -R Aras-PLM/skills/aras-innovator-engineering ~/.codex/skills/
 ## 安装到 Claude Code
 
 ```bash
-git clone https://github.com/OWNER/REPOSITORY.git Aras-PLM
+git clone https://github.com/zerohh77/Aras-PLM.git
 mkdir -p ~/.claude/skills
 cp -R Aras-PLM/skills/aras-innovator-engineering ~/.claude/skills/
 ```
@@ -65,7 +70,7 @@ cp -R Aras-PLM/skills/aras-innovator-engineering .claude/skills/
 ```
 
 ```text
-我们运行 Aras Innovator 2024 Release。请设计 Part 与 CAD Document 的关系模型，并给出安全的 IOM 查询及验证矩阵。
+我们运行 Aras Innovator Release 30 / Build 14.0.22.40048。请审查这个 Server Method 的 .NET/C# 兼容性、事件版本和 Relationship 版本行为。
 ```
 
 ```text
@@ -75,6 +80,8 @@ cp -R Aras-PLM/skills/aras-innovator-engineering .claude/skills/
 ## 证据边界
 
 - 官方目标版本资料优先于第三方总结和培训材料。
+- Release 30 专项规则只适用于 Build `14.0.22.40048`；不得泛化到所有 Aras 14.x 构建。
+- `.NET 6.0` 运行时不等于已确认的 C# 编译器语言版本；新语法和异步行为必须在目标实例验证。
 - 版本不明确时，Skill 会提供安全的版本中立路径，并标记需要针对目标 Release/SP/Hotfix 验证的签名。
 - 仓库不包含原始 PDF、PPTX、DOCX 或第三方网页副本，避免重新分发受版权保护的源材料。
 - 本项目是社区工程辅助资料，不是 Aras 官方产品或官方支持渠道。Aras 和 Aras Innovator 是其各自权利人的商标。
