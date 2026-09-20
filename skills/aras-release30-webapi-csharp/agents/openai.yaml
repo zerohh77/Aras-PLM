@@ -1,0 +1,6 @@
+interface:
+  display_name: "Aras Release 30 Web API C#"
+  short_description: "External C# Web APIs for Aras Release 30"
+  default_prompt: "Use $aras-release30-webapi-csharp to design or review this external Aras Release 30 Web API integration."
+policy:
+  allow_implicit_invocation: true

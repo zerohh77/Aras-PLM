@@ -1,0 +1,6 @@
+interface:
+  display_name: "Aras Release 30 Client JavaScript"
+  short_description: "Release-aware Aras client JavaScript"
+  default_prompt: "Use $aras-release30-client-js to implement or review this Aras Release 30 client JavaScript task."
+policy:
+  allow_implicit_invocation: true

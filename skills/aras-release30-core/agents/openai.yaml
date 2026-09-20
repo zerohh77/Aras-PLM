@@ -1,0 +1,6 @@
+interface:
+  display_name: "Aras Release 30 Core"
+  short_description: "Release-aware Aras platform engineering"
+  default_prompt: "Use $aras-release30-core to design or diagnose this Aras Release 30 change safely."
+policy:
+  allow_implicit_invocation: true
